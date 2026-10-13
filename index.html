@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频评级系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0B0E14;
+            color: #F8FAFC;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: #F8FAFC;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            background: #1E293B;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #94A3B8;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .tab-button:hover {
+            background: #334155;
+            color: #F8FAFC;
+        }
+
+        .tab-button.active {
+            background: #38BDF8;
+            color: #0B0E14;
+            border-color: #38BDF8;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        .video-container {
+            margin-top: 0;
+            transition: margin-top 0.3s ease;
+        }
+
+        .video-container.drama-mode {
+            margin-top: -4rem;
+        }
+
+        .table-container {
+            background: #1E293B;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #0F172A;
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94A3B8;
+            border-bottom: 1px solid #334155;
+        }
+
+        tbody tr {
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border-bottom: 1px solid #334155;
+        }
+
+        tbody tr:hover {
+            background: #334155;
+        }
+
+        tbody tr.active {
+            background: #1E40AF;
+        }
+
+        td {
+            padding: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .grade {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .grade-s {
+            background: linear-gradient(135deg, #F97316 0%, #F59E0B 100%);
+            color: #FFF;
+            box-shadow: 0 0 12px rgba(249, 115, 22, 0.4);
+        }
+
+        .grade-a-plus {
+            background: #38BDF8;
+            color: #0B0E14;
+        }
+
+        .grade-a {
+            background: #22D3EE;
+            color: #0B0E14;
+        }
+
+        .grade-b {
+            background: #4FD1C5;
+            color: #0B0E14;
+        }
+
+        .video-container {
+            position: sticky;
+            top: 0;
+            background: #1E293B;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .video-header {
+            padding: 1.5rem;
+            background: #0F172A;
+            border-bottom: 1px solid #334155;
+        }
+
+        .video-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #F8FAFC;
+        }
+
+        .video-grade {
+            margin-top: 0.5rem;
+        }
+
+        video {
+            width: 100%;
+            display: block;
+            background: #000;
+            max-height: 600px;
+        }
+
+        .placeholder {
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+            color: #64748B;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 1024px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .video-container {
+                position: relative;
+                top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('ad')">广告</button>
+            <button class="tab-button" onclick="switchTab('drama')">剧</button>
+        </div>
+        
+        <div class="layout">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>名称</th>
+                            <th>级别</th>
+                        </tr>
+                    </thead>
+                    <tbody id="videoList">
+                        <!-- 数据将由JavaScript填充 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="video-container">
+                <div class="video-header">
+                    <div class="video-title" id="currentTitle">选择一个视频播放</div>
+                    <div class="video-grade" id="currentGrade"></div>
+                </div>
+                <div id="videoPlayer">
+                    <div class="placeholder">
+                        <span>点击左侧表格中的视频开始播放</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const videoData = {
+            ad: [
+                { name: '禁毒', grade: 'S', file: '广告/禁毒.mp4' },
+                { name: '汽车宣传片', grade: 'A+', file: '广告/电动SUV.mp4' },
+                { name: '地震', grade: 'A+', file: '广告/霓虹震序.mp4' },
+                { name: '网安', grade: 'A', file: '广告/网络安全.mp4' },
+                { name: '综里绘山河', grade: 'A', file: '广告/一场跨时空面试.mp4' },
+                { name: '通服', grade: 'B', file: '广告/你的算力管家.mp4' },
+                { name: '未词', grade: 'B', file: '广告/暗香.mp4' }
+            ],
+            drama: [
+                { name: '弃婚新娘的复仇', grade: 'A+', file: '剧/弃婚新娘的复仇.mp4' },
+                { name: '影后逆袭：听懂喵言喵语', grade: 'A', file: '剧/影后逆袭：听懂喵言喵语.mp4' },
+                { name: '碎镜双界：被背叛后的逆袭', grade: 'B', file: '剧/碎镜双界：被背叛后的逆袭.mp4' },
+                { name: '苍穹之拳', grade: 'A', file: '剧/苍穹之拳.mp4' }
+            ]
+        };
+
+        const videoBasePath = './评级汇总水印/';
+        let currentTab = 'ad';
+
+        function getGradeClass(grade) {
+            const gradeMap = {
+                'S': 'grade-s',
+                'A+': 'grade-a-plus',
+                'A': 'grade-a',
+                'B': 'grade-b'
+            };
+            return gradeMap[grade] || 'grade-b';
+        }
+
+        function renderVideoList() {
+            const tbody = document.getElementById('videoList');
+            tbody.innerHTML = '';
+
+            const videos = videoData[currentTab];
+            videos.forEach((video, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${video.name}</td>
+                    <td><span class="grade ${getGradeClass(video.grade)}">${video.grade}</span></td>
+                `;
+                row.onclick = () => playVideo(video, row);
+                tbody.appendChild(row);
+            });
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.tab-button').forEach((btn, index) => {
+                btn.classList.remove('active');
+                if ((tab === 'ad' && index === 0) || (tab === 'drama' && index === 1)) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // 根据标签页调整视频容器位置
+            const videoContainer = document.querySelector('.video-container');
+            if (tab === 'drama') {
+                videoContainer.classList.add('drama-mode');
+            } else {
+                videoContainer.classList.remove('drama-mode');
+            }
+            
+            // 重新渲染列表
+            renderVideoList();
+            
+            // 清空播放器
+            document.getElementById('currentTitle').textContent = '选择一个视频播放';
+            document.getElementById('currentGrade').innerHTML = '';
+            document.getElementById('videoPlayer').innerHTML = `
+                <div class="placeholder">
+                    <span>点击左侧表格中的视频开始播放</span>
+                </div>
+            `;
+        }
+
+        function playVideo(video, rowElement) {
+            // 移除之前的active状态
+            document.querySelectorAll('tbody tr').forEach(tr => tr.classList.remove('active'));
+            // 添加当前行的active状态
+            rowElement.classList.add('active');
+
+            // 更新标题和评级
+            document.getElementById('currentTitle').textContent = video.name;
+            const gradeContainer = document.getElementById('currentGrade');
+            gradeContainer.innerHTML = `<span class="grade ${getGradeClass(video.grade)}">${video.grade}</span>`;
+
+            // 创建视频播放器
+            const videoPlayer = document.getElementById('videoPlayer');
+            const videoPath = videoBasePath + video.file;
+            
+            videoPlayer.innerHTML = `
+                <video controls autoplay>
+                    <source src="${videoPath}" type="video/mp4">
+                    您的浏览器不支持视频播放。
+                </video>
+            `;
+        }
+
+        // 初始化
+        renderVideoList();
+    </script>
+</body>
+</html>
